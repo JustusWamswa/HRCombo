@@ -9,7 +9,7 @@ function CandidateIntro() {
     const navigate = useNavigate()
 
     return (
-        <Box width={'80%'} px={5} mx={'auto'} pt={8} display={'flex'}>
+        <Box width={'70%'} px={5} mx={'auto'} pt={8} display={'flex'}>
             <Box
                 width={'50%'}
                 component={motion.div}
@@ -42,9 +42,8 @@ function CandidateIntro() {
                     Your personalized dashboard to manage your job search
                 </Typography>
                 <Typography
-                    lineHeight={2}
-                    letterSpacing={0.5}
-                    textAlign={'justify'}
+                    lineHeight={1.5}
+                    letterSpacing={0.3}
                     mt={3}
                     mb={6}
                     component={motion.div}
@@ -59,7 +58,7 @@ function CandidateIntro() {
                     variant='outlined'
                     color='secondary'
                     sx={{ paddingX: 3, paddingY: 2, textTransform: 'capitalize', boxShadow: 2, borderRadius: 3, minWidth: 200 }}
-                    onClick={() => navigate('/profile')}
+                    onClick={() => navigate('/candidateportal/profile')}
                     component={motion.div}
                     initial={{ y: '-3vh', opacity: 0 }}
                     viewport={{ once: true }}
@@ -69,7 +68,7 @@ function CandidateIntro() {
                     Edit profile
                 </Button>
             </Box>
-            <Box display={'flex'} justifyContent={'center'} alignItems={'center'} width={'50%'}>
+            <Box display={'flex'} justifyContent={'end'} alignItems={'center'} width={'50%'}>
                 <svg width="300" height="300" viewBox="0 0 160 160" style={{ transform: "rotate(-90deg)" }}>
                     <defs>
                         <linearGradient id="gradientStroke" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -84,8 +83,8 @@ function CandidateIntro() {
                         transition={{ type: 'spring', duration: 2, delay: 0.1 }}
                         viewport={{ once: true }}
                     ></motion.circle>
-                    <text x="71px" y="115px" fill="#5e5d5e" fontSize="10px" style={{ transform: "rotate(90deg) translate(-10px, -220px)" }}>Profile</text>
-                    <text x="71px" y="115px" fill="#210D41" fontSize="30px" fontWeight="bold" style={{ transform: "rotate(90deg) translate(-20px, -170px)" }}>79%</text>
+                    <text x="71px" y="115px" fill="#5e5d5e" fontSize="10px" style={{ transform: "rotate(90deg) translate(-8px, -220px)" }}>Profile</text>
+                    <text x="71px" y="115px" fill="#210D41" fontSize="30px" fontWeight="bold" style={{ transform: "rotate(90deg) translate(-20px, -180px)" }}>79%</text>
                 </svg>
             </Box>
         </Box>

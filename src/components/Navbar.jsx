@@ -164,13 +164,16 @@ function Navbar({ children }) {
         <>
             <Box sx={{ width: '100%' }} display={{ xs: 'none', lg: 'block' }}>
                 <Box display={'flex'} alignItems={'center'} justifyContent={'space-between'} maxWidth={'90%'} mx={'auto'}>
-                    <Box
-                        component="img"
-                        sx={{ height: 80, cursor: 'pointer' }}
-                        alt="Logo"
-                        src={Logo}
-                        onClick={() => navigate('/')}
-                    />
+                    <Box display={'flex'} alignItems={'center'} onClick={() => navigate('/')} sx={{ cursor: 'pointer' }}>
+                        <Box
+                            component="img"
+                            sx={{ height: 80 }}
+                            alt="Logo"
+                            src={Logo}
+                        />
+                        <Typography color={'primary'} fontWeight={'bold'} variant='h2' fontSize={{ xs: 20, md: 20 }}>HR</Typography>
+                        <Typography color={'secondary'} fontWeight={'bold'} variant='h2' fontSize={{ xs: 20, md: 20 }}>Combo</Typography>
+                    </Box>
                     <Tabs value={navValue} onChange={handleChange} aria-label="large screen navbar" >
                         <Tab label="Home" {...a11yProps(0)} sx={{ textTransform: 'capitalize' }} onClick={() => navigate('/')} />
                         <Tab label="About Us" {...a11yProps(1)} sx={{ textTransform: 'capitalize' }} onClick={() => navigate('/aboutus')} />
