@@ -17,6 +17,7 @@ import EmployerPortal from './pages/employerPortal'
 import Profile from './pages/profile'
 import CandidateForm from './pages/candidateForm'
 import EmployerForm from './pages/employerForm'
+import SingleJob from './pages/singleJob'
 
 
 const myTheme = createTheme({
@@ -66,6 +67,7 @@ function App() {
             <Route path='/resetpassword' element={<ResetPassword />} />
             <Route path='/aboutus' element={<AboutUs />} />
             <Route path='/joblistings' element={<JobListings />} />
+            <Route path='/joblistings/:id' element={<SingleJob />} />
             <Route path='/candidateportal' element={<CandidatePortal />} />
             <Route path='/employerportal' element={<EmployerPortal />} />
             <Route path='/candidateportal/profile' element={<Profile />} />

@@ -3,6 +3,7 @@ from django.db import models
 # Create your models here.
 
 from django.db import models
+from django.utils.timezone import now
 
 
 class User(models.Model):
@@ -20,33 +21,49 @@ class User(models.Model):
 
     def __str__(self):
         return self.email
+    
 
+class JobPDF(models.Model):
+    uploaded_by = models.CharField(max_length=255)
+    file = models.FileField(upload_to='pdfs/')
+    file_text = models.TextField(default='', blank=True)
+    upload_date = models.DateTimeField(auto_now_add=True)
 
-class Candidate(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    contact_info = models.JSONField()
-    education = models.JSONField()
-    work_experience = models.JSONField()
-    skills = models.JSONField()
-    resume = models.URLField()
-    parsed_data = models.JSONField()
+    def __str__(self):
+        return self.uploaded_by
+    
+class ResumePDF(models.Model):
+    uploaded_by = models.CharField(max_length=255)
+    file = models.FileField(upload_to='pdfs/')
+    file_text = models.TextField(default='', blank=True)
+    upload_date = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.uploaded_by
+    
+class CandidatePreference(models.Model):
+    resume_pdf = models.ForeignKey(ResumePDF, on_delete=models.CASCADE)
+    preferred_location = models.CharField(max_length=200)
+    address= models.CharField(max_length=200)
+    country = models.CharField(max_length=200)
+    industries = models.CharField(max_length=200)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'{self.first_name} {self.last_name}'
-
+        return self.user
+    
 
 class JobPosting(models.Model):
-    title = models.CharField(max_length=200)
-    description = models.TextField()
-    requirements = models.JSONField()
-    skills = models.JSONField()
-    company = models.CharField(max_length=200)
-    location = models.CharField(max_length=200)
-    posted_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200, default=None)
+    company = models.CharField(max_length=200, default=None)
+    location = models.CharField(max_length=200, default=None)
+    logo = models.ImageField(default=None)
+    type_of_employment = models.CharField(max_length=200, default=None)
+    lowest_monthly_salary_usd = models.CharField(max_length=200, default=0)
+    highest_monthly_salary_usd = models.CharField(max_length=200, default=0)
+    deadline = models.DateTimeField(default=now)
+    job_pdf= models.ForeignKey(JobPDF, on_delete=models.CASCADE, default='job-pdf-id')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -62,10 +79,9 @@ class Application(models.Model):
         ('accepted', 'Accepted'),
     ]
 
-    candidate = models.ForeignKey(Candidate, on_delete=models.CASCADE)
+    applicant = models.CharField(max_length=255, default='applicant')
     job_posting = models.ForeignKey(JobPosting, on_delete=models.CASCADE)
     status = models.CharField(max_length=50, choices=STATUS_CHOICES)
-    score = models.FloatField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -73,34 +89,14 @@ class Application(models.Model):
         return f'Application of {self.candidate} for {self.job_posting}'
 
 
-class AIModel(models.Model):
-    model_type = models.CharField(max_length=200)
-    version = models.CharField(max_length=50)
-    parameters = models.JSONField()
-    performance_metrics = models.JSONField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return f'{self.model_type} v{self.version}'
-
-
-class ActivityLog(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    action = models.CharField(max_length=200)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    details = models.JSONField()
-
-    def __str__(self):
-        return f'{self.user} - {self.action}'
-
-
-class Feedback(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+class Message(models.Model):
+    name = models.TextField()
     message = models.TextField()
-    rating = models.IntegerField(null=True, blank=True)
+    email = models.EmailField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f'Feedback from {self.user}'
+        return f'Message from {self.name}'
+

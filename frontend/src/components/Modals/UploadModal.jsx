@@ -2,6 +2,8 @@ import React, { useState } from 'react'
 import { Box, Modal, Typography, Button } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { DNA } from 'react-loader-spinner'
+import { uploadResume } from '../../services/api'
+import { useRequestStateStore } from '../../stores/useRequestStateStore'
 
 const style = {
     position: 'absolute',
@@ -19,7 +21,7 @@ const UploadModal = ({ open, handleClose }) => {
     const navigate = useNavigate()
     const [file, setFile] = useState(null)
     const [error, setError] = useState(null)
-    const [loading, setLoading] = useState(false)
+     const { loading, success, setLoading, setSuccess } = useRequestStateStore()
 
     const handleDrop = (event) => {
         event.preventDefault()
@@ -42,11 +44,24 @@ const UploadModal = ({ open, handleClose }) => {
         }
     }
 
-    const handleUpload = async () => {
+    const handleUpload = () => {
         if (file) {
             setLoading(true)
-            navigate('/candidateportal/candidateform', { state: { file } })
-            setLoading(false)
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('uploaded_by', 'user')
+            console.log(formData)
+            uploadResume(formData)
+            .then((res) => {
+                console.log(res)
+                setLoading(false)
+                navigate('/candidateportal/candidateform', { state: { file } })
+            })
+            .catch((err) => {
+                console.error("Upload reume error: ", err)
+                setLoading(false)
+                setError("Uploading resume failed")
+            })
         }
     }
 

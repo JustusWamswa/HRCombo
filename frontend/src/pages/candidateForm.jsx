@@ -1,108 +1,172 @@
-import React, { useState } from 'react';
-import { Box, Typography, Button, Grid } from '@mui/material';
-import { useLocation } from 'react-router-dom';
-import { Document, Page, pdfjs } from 'react-pdf';
+import React, { useState, useEffect } from 'react'
+import { Box, Typography, Button, Grid, Autocomplete, TextField } from '@mui/material'
+import { useLocation } from 'react-router-dom'
+import { Viewer } from '@react-pdf-viewer/core'
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout'
+import '@react-pdf-viewer/core/lib/styles/index.css'
+import '@react-pdf-viewer/default-layout/lib/styles/index.css'
+import { Worker } from '@react-pdf-viewer/core'
 
-import 'react-pdf/dist/Page/TextLayer.css';
-import 'react-pdf/dist/Page/AnnotationLayer.css';
+const industryOptions = [
+  { title: 'Technology' },
+  { title: 'Finance' },
+  { title: 'Healthcare' },
+  // Add more options as needed
+]
 
+const locationOptions = [
+  { title: 'Hybrid' },
+  { title: 'Remote' },
+  { title: 'Onsite' },
+  // Add more options as needed
+]
 
 const CandidateForm = () => {
-  const location = useLocation();
-  const { file: initialFile } = location.state || {};
+  const defaultLayoutPluginInstance = defaultLayoutPlugin()
+  const location = useLocation()
+  const { file: initialFile } = location.state || {}
+  const [fileUrl, setFileUrl] = useState(null)
+  const [industries, setIndustries] = useState([])
+  const [preferredLocations, setPreferredLocations] = useState([])
+  const [locationValue, setLocationValue] = useState(null)
+  const [myLocation, setMyLocation] = useState({ country: '', address: '' })
+  const [errors, setErrors] = useState({ industries: false, preferredLocations: false, country: false, address: false })
 
-  const [firstFile, setFirstFile] = useState(initialFile);
-  const [secondFile, setSecondFile] = useState(null);
-  const [error, setError] = useState(null);
-
-  const handleDrop = (event) => {
-    event.preventDefault();
-    const droppedFile = event.dataTransfer.files[0];
-    if (droppedFile && droppedFile.type === "application/pdf") {
-      setSecondFile(droppedFile);
-      setError(null);
-    } else {
-      setError("Only PDF files are allowed");
+  useEffect(() => {
+    if (initialFile) {
+      const fileReader = new FileReader()
+      fileReader.onload = () => {
+        setFileUrl(fileReader.result)
+      }
+      fileReader.readAsDataURL(initialFile)
     }
-  };
+  }, [initialFile])
 
-  const handleFileChange = (event) => {
-    const selectedFile = event.target.files[0];
-    if (selectedFile && selectedFile.type === "application/pdf") {
-      setSecondFile(selectedFile);
-      setError(null);
-    } else {
-      setError("Only PDF files are allowed");
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    // Validate fields
+    const newErrors = {
+      industries: industries.length === 0,
+      preferredLocations: preferredLocations.length === 0,
+      country: myLocation.country === '',
+      address: myLocation.address === '',
+    };
+    setErrors(newErrors);
+
+    if (!newErrors.industries && !newErrors.preferredLocations && !newErrors.country && !newErrors.address) {
+      // setLoading(true)
+      // createEnquiry(enquiry)
+      //   .then((res) => {
+      //     setLoading(false)
+      //     setSuccess(true)
+      //     setTimeout(() => {
+      //       setSuccess(false)
+      //     }, 3000)
+      //   })
+      //   .catch((err) => {
+      //     console.log(err)
+      //     setLoading(false)
+      //     setError(true)
+      //     setTimeout(() => {
+      //       setError(false)
+      //     }, 3000)
+      //   })
     }
-  };
+  }
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Candidate Portal
+    <Box sx={{ p: 4 }} width={'80%'} mx={'auto'}>
+      <Typography variant="h6" component="h1" gutterBottom mb={3}>
+        Preview details
       </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={6}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            First PDF
-          </Typography>
-          {firstFile ? (
-            <Document file={firstFile}>
-              <Page pageNumber={1} />
-            </Document>
-          ) : (
-            <Typography variant="body2">No first PDF uploaded yet.</Typography>
-          )}
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Box width={'100%'} height={'100vh'} mb={20}>
+            {fileUrl ? (
+              <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
+                <Viewer
+                  fileUrl={fileUrl}
+                  plugins={[
+                    // Register plugins
+                    defaultLayoutPluginInstance,
+                  ]}
+                />
+              </Worker>
+            ) : (
+              <Typography variant="body2" color="error">
+                No file selected
+              </Typography>
+            )}
+          </Box>
         </Grid>
-        <Grid item xs={6}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Second PDF
-          </Typography>
-          {secondFile ? (
-            <Document file={secondFile}>
-              <Page pageNumber={1} />
-            </Document>
-          ) : (
-            <Typography variant="body2">No second PDF uploaded yet.</Typography>
-          )}
-        </Grid>
-        <Grid item xs={12}>
-          <Typography variant="h6" component="h2" gutterBottom>
-            Upload a new Resume
-          </Typography>
-          <Box
-            onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            sx={{
-              border: '2px dashed #ccc',
-              padding: '20px',
-              textAlign: 'center',
-              cursor: 'pointer',
-              mt: 2
-            }}
-          >
-            <Typography variant="body2">
-              Drag & Drop your file here or
-            </Typography>
-            <Button variant="contained" component="label" sx={{ mt: 1 }}>
-              Browse File
-              <input type="file" hidden onChange={handleFileChange} accept="application/pdf" />
+        <Grid item xs={12} md={6}>
+          <Box width={'70%'} pl={5}>
+            <Typography mb={3}>Additional details</Typography>
+            <Autocomplete
+              multiple
+              options={industryOptions}
+              getOptionLabel={(option) => option.title}
+              value={industries}
+              onChange={(event, newValue) => setIndustries(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} variant="outlined" label="Choose your industry" placeholder="Select industries" />
+              )}
+              sx={{ mb: 3 }}
+              required
+              error={errors.industries}
+              helperText={errors.industries ? 'Industry is required' : ''}
+            />
+            <Autocomplete
+              multiple
+              options={locationOptions}
+              getOptionLabel={(option) => option.title}
+              value={preferredLocations}
+              onChange={(event, newValue) => setPreferredLocations(newValue)}
+              renderInput={(params) => (
+                <TextField {...params} variant="outlined" label="Preferred Location of Work" placeholder="Select locations" />
+              )}
+              sx={{ mb: 3 }}
+              required
+              error={errors.preferredLocations}
+              helperText={errors.preferredLocations ? 'Preferred Location of work is required' : ''}
+            />
+            <TextField
+              value={myLocation.country}
+              onChange={(e) => setMyLocation({ ...myLocation, country: e.target.value })}
+              variant="outlined"
+              label="Country of residence"
+              placeholder="Country of residence"
+              fullWidth
+              sx={{ mb: 3 }}
+              required
+              error={errors.country}
+              helperText={errors.country ? 'Country is required' : ''}
+            />
+            <TextField
+              value={myLocation.address}
+              onChange={(e) => setMyLocation({ ...myLocation, address: e.target.value })}
+              variant="outlined"
+              label="Address"
+              placeholder="Address"
+              fullWidth
+              required
+              error={errors.address}
+              helperText={errors.address ? 'Address is required' : ''}
+              sx={{ mb: 3 }}
+            />
+            <Button
+              variant='contained'
+              color='primary'
+              sx={{ mt: 3, textTransform: 'capitalize', fontSize: '1rem', py: 1, width: '100%', bgcolor: 'primary.main', ":hover": { bgcolor: 'primary.dark' } }}
+              onClick={handleSubmit}
+            >
+              Submit
             </Button>
           </Box>
-          {error && (
-            <Typography variant="body2" color="error" sx={{ mt: 2 }}>
-              {error}
-            </Typography>
-          )}
-          {secondFile && (
-            <Typography variant="body2" sx={{ mt: 2 }}>
-              Selected second file: {secondFile.name}
-            </Typography>
-          )}
         </Grid>
       </Grid>
     </Box>
-  );
-};
+  )
+}
 
-export default CandidateForm;
+export default CandidateForm
