@@ -2,6 +2,10 @@ import React, { useState } from 'react'
 import { Box, Modal, Typography, Button } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { DNA } from 'react-loader-spinner'
+import { createJobPDF, createResumePDF } from '../../services/api'
+import { useRequestStateStore } from '../../stores/useRequestStateStore'
+import { useUser } from '@clerk/clerk-react'
+
 
 const style = {
     position: 'absolute',
@@ -16,10 +20,12 @@ const style = {
 }
 
 const UploadJDModal = ({ open, handleClose }) => {
+
+    const { user } = useUser()
     const navigate = useNavigate()
     const [file, setFile] = useState(null)
     const [error, setError] = useState(null)
-    const [loading, setLoading] = useState(false)
+    const { loading, success, setLoading, setSuccess } = useRequestStateStore()
 
     const handleDrop = (event) => {
         event.preventDefault()
@@ -42,9 +48,27 @@ const UploadJDModal = ({ open, handleClose }) => {
         }
     }
 
-    const handleUpload = async () => {
+    const handleUpload = () => {
         if (file) {
-            navigate('/employerportal/employerform', { state: { file } })
+            setLoading(true)
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('uploaded_by', user?.id)
+            createJobPDF(formData)
+                .then((res) => {
+                    console.log(res)
+                    setLoading(false)
+                    setSuccess(true)
+                    setTimeout(() => {
+                        setSuccess(false)
+                    }, 3000)
+                    navigate('/employerportal/employerform', { state: { file: file, resume_pdf_id: res.data.id } })
+                })
+                .catch((err) => {
+                    console.error("Upload job description error: ", err)
+                    setLoading(false)
+                    setError("Uploading job description failed")
+                })
         }
     }
 
@@ -58,7 +82,7 @@ const UploadJDModal = ({ open, handleClose }) => {
             <Box sx={style} display={'flex'} flexDirection={'column'} alignItems={'end'}>
                 <Box width={'100%'}>
                     <Typography id="upload-modal-title" variant="h6" component="h2">
-                        Upload Resume
+                        Upload Job Description
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 2 }}>
                         Only PDF files are allowed
@@ -95,26 +119,16 @@ const UploadJDModal = ({ open, handleClose }) => {
                         </Typography>
                     )}
                 </Box>
-                <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} width={'100%'}>
-                    <DNA
-                        visible={loading}
-                        height="80"
-                        width="80"
-                        ariaLabel="dna-loading"
-                        wrapperStyle={{ color: '#000' }}
-                        wrapperClass="dna-wrapper"
-                        color="#4fa94d"
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ mt: 2, ml: 'auto' }}
-                        onClick={handleUpload}
-                        disabled={!file}
-                    >
-                        Upload
-                    </Button>
-                </Box>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2, ml: 'auto' }}
+                    onClick={handleUpload}
+                    disabled={!file || loading}
+                >
+                    Upload
+                </Button>
             </Box>
         </Modal>
     )

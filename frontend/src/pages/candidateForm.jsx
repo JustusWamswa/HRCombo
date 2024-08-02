@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { Box, Typography, Button, Grid, Autocomplete, TextField } from '@mui/material'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Viewer } from '@react-pdf-viewer/core'
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout'
 import '@react-pdf-viewer/core/lib/styles/index.css'
 import '@react-pdf-viewer/default-layout/lib/styles/index.css'
 import { Worker } from '@react-pdf-viewer/core'
+import { createCandidatePreference } from '../services/api'
+import { useRequestStateStore } from '../stores/useRequestStateStore'
+import { useUser } from '@clerk/clerk-react'
+
 
 const industryOptions = [
   { title: 'Technology' },
@@ -22,15 +26,18 @@ const locationOptions = [
 ]
 
 const CandidateForm = () => {
+  const { user } = useUser()
+  const navigate = useNavigate()
   const defaultLayoutPluginInstance = defaultLayoutPlugin()
   const location = useLocation()
-  const { file: initialFile } = location.state || {}
+  const { file: initialFile, resume_pdf_id } = location.state || {}
   const [fileUrl, setFileUrl] = useState(null)
   const [industries, setIndustries] = useState([])
   const [preferredLocations, setPreferredLocations] = useState([])
   const [locationValue, setLocationValue] = useState(null)
   const [myLocation, setMyLocation] = useState({ country: '', address: '' })
   const [errors, setErrors] = useState({ industries: false, preferredLocations: false, country: false, address: false })
+  const { setSuccess, setError, setLoading } = useRequestStateStore()
 
   useEffect(() => {
     if (initialFile) {
@@ -54,23 +61,33 @@ const CandidateForm = () => {
     setErrors(newErrors);
 
     if (!newErrors.industries && !newErrors.preferredLocations && !newErrors.country && !newErrors.address) {
-      // setLoading(true)
-      // createEnquiry(enquiry)
-      //   .then((res) => {
-      //     setLoading(false)
-      //     setSuccess(true)
-      //     setTimeout(() => {
-      //       setSuccess(false)
-      //     }, 3000)
-      //   })
-      //   .catch((err) => {
-      //     console.log(err)
-      //     setLoading(false)
-      //     setError(true)
-      //     setTimeout(() => {
-      //       setError(false)
-      //     }, 3000)
-      //   })
+      const preferences = {
+        industries: industries.map(ind => ind.title).join(', '),
+        preferred_location: preferredLocations.map(loc => loc.title).join(', '),
+        country: myLocation.country,
+        address: myLocation.address,
+        resume_pdf_id: resume_pdf_id, 
+        user: user?.id
+      }
+      console.log(preferences)
+      setLoading(true)
+      createCandidatePreference(preferences)
+        .then((res) => {
+          setLoading(false)
+          setSuccess(true)
+          setTimeout(() => {
+            setSuccess(false)
+          }, 3000)
+          navigate('/candidateportal')
+        })
+        .catch((err) => {
+          console.log(err)
+          setLoading(false)
+          setError(true)
+          setTimeout(() => {
+            setError(false)
+          }, 3000)
+        })
     }
   }
 

@@ -4,7 +4,7 @@ import passion from '../assets/passion.jpg'
 import Title from '../components/Title'
 import { motion } from 'framer-motion'
 import hero from '../assets/hero.png'
-import { createEnquiry } from '../services/api'
+import { createMessage } from '../services/api'
 import { useRequestStateStore } from '../stores/useRequestStateStore'
 import Loader from '../components/Modals/Loader'
 import SuccessAlert from '../components/Alerts/SucessAlert'
@@ -37,7 +37,7 @@ const AboutUs = () => {
 
     if (!newErrors.name && !newErrors.email && !newErrors.message) {
       setLoading(true)
-      createEnquiry(enquiry)
+      createMessage(enquiry)
         .then((res) => {
           setLoading(false)
           setSuccess(true)

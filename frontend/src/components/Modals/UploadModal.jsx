@@ -2,8 +2,10 @@ import React, { useState } from 'react'
 import { Box, Modal, Typography, Button } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { DNA } from 'react-loader-spinner'
-import { uploadResume } from '../../services/api'
+import { createResumePDF } from '../../services/api'
 import { useRequestStateStore } from '../../stores/useRequestStateStore'
+import { useUser } from '@clerk/clerk-react'
+
 
 const style = {
     position: 'absolute',
@@ -18,10 +20,12 @@ const style = {
 }
 
 const UploadModal = ({ open, handleClose }) => {
+
+    const { user } = useUser()
     const navigate = useNavigate()
     const [file, setFile] = useState(null)
     const [error, setError] = useState(null)
-     const { loading, success, setLoading, setSuccess } = useRequestStateStore()
+    const { loading, success, setLoading, setSuccess } = useRequestStateStore()
 
     const handleDrop = (event) => {
         event.preventDefault()
@@ -49,19 +53,22 @@ const UploadModal = ({ open, handleClose }) => {
             setLoading(true)
             const formData = new FormData()
             formData.append('file', file)
-            formData.append('uploaded_by', 'user')
-            console.log(formData)
-            uploadResume(formData)
-            .then((res) => {
-                console.log(res)
-                setLoading(false)
-                navigate('/candidateportal/candidateform', { state: { file } })
-            })
-            .catch((err) => {
-                console.error("Upload reume error: ", err)
-                setLoading(false)
-                setError("Uploading resume failed")
-            })
+            formData.append('uploaded_by', user?.id)
+            createResumePDF(formData)
+                .then((res) => {
+                    console.log(res)
+                    setLoading(false)
+                    setSuccess(true)
+                    setTimeout(() => {
+                        setSuccess(false)
+                    }, 3000)
+                    navigate('/candidateportal/candidateform', { state: { file: file, resume_pdf_id: res.data.id } })
+                })
+                .catch((err) => {
+                    console.error("Upload resume error: ", err)
+                    setLoading(false)
+                    setError("Uploading resume failed")
+                })
         }
     }
 
@@ -112,26 +119,16 @@ const UploadModal = ({ open, handleClose }) => {
                         </Typography>
                     )}
                 </Box>
-                <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} width={'100%'}>
-                    <DNA
-                        visible={loading}
-                        height="80"
-                        width="80"
-                        ariaLabel="dna-loading"
-                        wrapperStyle={{ color: '#000' }}
-                        wrapperClass="dna-wrapper"
-                        color="#4fa94d"
-                    />
-                    <Button
-                        variant="contained"
-                        color="primary"
-                        sx={{ mt: 2, ml: 'auto' }}
-                        onClick={handleUpload}
-                        disabled={!file || loading}
-                    >
-                        Upload
-                    </Button>
-                </Box>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    sx={{ mt: 2, ml: 'auto' }}
+                    onClick={handleUpload}
+                    disabled={!file || loading}
+                >
+                    Upload
+                </Button>
             </Box>
         </Modal>
     )

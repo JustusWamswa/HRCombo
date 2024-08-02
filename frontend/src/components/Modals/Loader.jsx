@@ -1,8 +1,12 @@
 import { Modal } from '@mui/material'
 import React from 'react'
 import { DNA } from 'react-loader-spinner'
+import { useRequestStateStore } from '../../stores/useRequestStateStore'
 
-function Loader({loading}) {
+function Loader() {
+
+    const { loading } = useRequestStateStore()
+
     return (
         <Modal
         open={loading}

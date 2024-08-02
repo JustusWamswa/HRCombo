@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
-from .models import Message, JobPDF, ResumePDF
+from .models import Message, JobPDF, ResumePDF, CandidatePreference
 import json
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -46,3 +46,36 @@ def upload_resume(request):
     pdf.save()
 
     return JsonResponse({'status': 'success', 'id': pdf.id}, status=201)
+
+
+@csrf_exempt
+@require_POST
+def add_candidate_preference(request):
+    try:
+        data = json.loads(request.body)
+        resume_pdf_id = data.get('resume_pdf_id')
+        preferred_location = data.get('preferred_location')
+        address = data.get('address')
+        country = data.get('country')
+        industries = data.get('industries')
+
+        # Ensure the related ResumePDF exists
+        resume_pdf = ResumePDF.objects.get(id=resume_pdf_id)
+        print("resume pdf: ", resume_pdf)
+
+        # Create and save the CandidatePreference instance
+        candidate_preference = CandidatePreference(
+            resume_pdf=resume_pdf,
+            preferred_location=preferred_location,
+            address=address,
+            country=country,
+            industries=industries
+        )
+        candidate_preference.save()
+
+        return JsonResponse({'status': 'success'}, status=201)
+    except ResumePDF.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'ResumePDF not found'}, status=400)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+

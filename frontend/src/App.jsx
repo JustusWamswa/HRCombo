@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import { createTheme, ThemeProvider } from "@mui/material/styles"
 import Home from './pages/home'
@@ -54,6 +54,8 @@ const myTheme = createTheme({
 })
 
 function App() {
+ 
+
   return (
     <ThemeProvider theme={myTheme}>
       <Layout>

@@ -1,12 +1,17 @@
-import { Alert, AlertTitle } from '@mui/material'
+import { Alert, AlertTitle, Snackbar } from '@mui/material'
 import React from 'react'
+import { useRequestStateStore } from '../../stores/useRequestStateStore'
 
-function SuccessAlert({message}) {
+function SuccessAlert() {
+
+    const { success } = useRequestStateStore()
+
     return (
-        <Alert severity="success" sx={{position: 'absolute', top: 10, right: 10}}>
-            <AlertTitle>Success</AlertTitle>
-            {message}
-        </Alert>
+        <Snackbar open={success} autoHideDuration={3000} anchorOrigin={{ vertical: 'top', horizontal: 'right' }} >
+            <Alert severity="success" sx={{width: '20vw'}}>
+                <AlertTitle>Success</AlertTitle>
+            </Alert>
+        </Snackbar>
     )
 }
 

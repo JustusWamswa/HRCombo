@@ -86,6 +86,16 @@ CORS_ALLOW_METHODS = [
     'OPTIONS',
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173', 
+    'https://hrcombo.vercel.app',    
+]
+
+CSRF_COOKIE_SAMESITE = 'None'
+
+# For local development only
+CSRF_COOKIE_SECURE = True  # Set to true to ensure you are using HTTPS in production
+
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [

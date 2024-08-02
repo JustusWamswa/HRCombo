@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
 import CssBaseline from '@mui/material/CssBaseline'
@@ -20,20 +21,21 @@ import AddIcCallIcon from '@mui/icons-material/AddIcCall'
 import DescriptionIcon from '@mui/icons-material/Description'
 import WidgetsIcon from '@mui/icons-material/Widgets'
 import SettingsIcon from '@mui/icons-material/Settings'
-import { useNavigate } from 'react-router-dom'
 import { Avatar, Button, Stack, Typography } from '@mui/material'
 import ContactSupportIcon from '@mui/icons-material/ContactSupport'
 import NotificationsIcon from '@mui/icons-material/Notifications'
-import PropTypes from 'prop-types';
+import PropTypes from 'prop-types'
 import Tabs from '@mui/material/Tabs'
 import Tab from '@mui/material/Tab'
 import Logo from '../assets/logo4.png'
 import { useNavStore } from '../stores/useNavStore'
 import Footer from './Footer'
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from '@clerk/clerk-react'
+
 const drawerWidth = 300
 
 function CustomTabPanel(props) {
-    const { children, value, index, ...other } = props;
+    const { children, value, index, ...other } = props
 
     return (
         <div
@@ -45,28 +47,38 @@ function CustomTabPanel(props) {
         >
             {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
         </div>
-    );
+    )
 }
 
 CustomTabPanel.propTypes = {
     children: PropTypes.node,
     index: PropTypes.number.isRequired,
     value: PropTypes.number.isRequired,
-};
+}
 
 function a11yProps(index) {
     return {
         id: `simple-tab-${index}`,
         'aria-controls': `simple-tabpanel-${index}`,
-    };
+    }
 }
 
 function Navbar({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false)
     const [isClosing, setIsClosing] = useState(false)
-    const [selected, setSelected] = useState('Dashboard')
     const { navValue, setNavValue } = useNavStore()
     const navigate = useNavigate()
+    const location = useLocation()
+    const { user } = useUser()
+
+    useEffect(() => {
+        const path = location.pathname.split('/')[1]
+        const tabs = ['', 'aboutus', 'joblistings', 'candidateportal', 'employerportal']
+        const tabIndex = tabs.indexOf(path)
+        if (tabIndex !== -1) {
+            setNavValue(tabIndex)
+        }
+    }, [location, setNavValue])
 
     const handleDrawerClose = () => {
         setIsClosing(true)
@@ -84,14 +96,11 @@ function Navbar({ children }) {
     }
 
     const handleChange = (event, newValue) => {
-        setNavValue(newValue);
+        setNavValue(newValue)
+        const paths = ['/', '/aboutus', '/joblistings', '/candidateportal', '/employerportal']
+        navigate(paths[newValue])
     }
 
-    const handleSelected = (text) => {
-        setSelected(text)
-        const url = text.trim().replace(' ', '').toLowerCase()
-        navigate(`/${url}`)
-    }
     const handleLogout = () => {
         navigate('/')
     }
@@ -122,9 +131,9 @@ function Navbar({ children }) {
                 {['Home', 'About Us', 'Job Listings', 'Candidate Portal', 'Employer Portal'].map((text, index) => (
                     <ListItem key={text} disablePadding>
                         <ListItemButton
-                            onClick={() => handleSelected(text)}
-                            sx={selected == text ? { backgroundColor: 'primary.main', color: 'white', ":hover": { backgroundColor: 'primary.main' }, mx: 2 } : { mx: 2 }}>
-                            <ListItemIcon sx={selected == text && { color: 'white' }}>
+                            onClick={() => handleChange(null, index)}
+                            sx={navValue === index ? { backgroundColor: 'primary.main', color: 'white', ":hover": { backgroundColor: 'primary.main' }, mx: 2 } : { mx: 2 }}>
+                            <ListItemIcon sx={navValue === index && { color: 'white' }}>
                                 {icons[index]}
                             </ListItemIcon>
                             <ListItemText primary={text} />
@@ -136,10 +145,10 @@ function Navbar({ children }) {
             <List>
                 <ListItem key={'Settings'} disablePadding>
                     <ListItemButton
-                        onClick={() => handleSelected('Settings')}
-                        sx={selected == 'Settings' ? { backgroundColor: 'primary.main', color: 'white', ":hover": { backgroundColor: 'primary.main' }, mx: 2 } : { mx: 2 }}>
+                        onClick={() => handleChange(null, 5)}
+                        sx={navValue === 5 ? { backgroundColor: 'primary.main', color: 'white', ":hover": { backgroundColor: 'primary.main' }, mx: 2 } : { mx: 2 }}>
                         <ListItemIcon>
-                            <SettingsIcon sx={selected == 'Settings' && { color: 'white' }} />
+                            <SettingsIcon sx={navValue === 5 && { color: 'white' }} />
                         </ListItemIcon>
                         <ListItemText primary={'Settings'} />
                     </ListItemButton>
@@ -175,13 +184,23 @@ function Navbar({ children }) {
                         <Typography color={'secondary'} fontWeight={'bold'} variant='h2' fontSize={{ xs: 20, md: 20 }}>Combo</Typography>
                     </Box>
                     <Tabs value={navValue} onChange={handleChange} aria-label="large screen navbar" >
-                        <Tab label="Home" {...a11yProps(0)} sx={{ textTransform: 'capitalize' }} onClick={() => navigate('/')} />
-                        <Tab label="About Us" {...a11yProps(1)} sx={{ textTransform: 'capitalize' }} onClick={() => navigate('/aboutus')} />
-                        <Tab label="Job Listings" {...a11yProps(2)} sx={{ textTransform: 'capitalize' }} onClick={() => navigate('/joblistings')} />
-                        <Tab label="Candidate Portal" {...a11yProps(3)} sx={{ textTransform: 'capitalize' }} onClick={() => navigate('/candidateportal')} />
-                        <Tab label="Employer Portal" {...a11yProps(4)} sx={{ textTransform: 'capitalize' }} onClick={() => navigate('/employerportal')} />
+                        <Tab label="Home" {...a11yProps(0)} sx={{ textTransform: 'capitalize' }} />
+                        <Tab label="About Us" {...a11yProps(1)} sx={{ textTransform: 'capitalize' }} />
+                        <Tab label="Job Listings" {...a11yProps(2)} sx={{ textTransform: 'capitalize' }} />
+                        <Tab label="Candidate Portal" {...a11yProps(3)} sx={{ textTransform: 'capitalize' }} />
+                        <Tab label="Employer Portal" {...a11yProps(4)} sx={{ textTransform: 'capitalize' }} />
                     </Tabs>
-                    <Button variant='contained' sx={{ paddingX: '1rem', textTransform: 'capitalize', borderRadius: 3 }} onClick={() => navigate('/login')}>Login/Register</Button>
+                    <SignedOut>
+                        <SignInButton>
+                            <Button variant='contained' sx={{ paddingX: '1rem', textTransform: 'capitalize', borderRadius: 3 }}>Login/Register</Button>
+                        </SignInButton>
+                    </SignedOut>
+                    <SignedIn>
+                        <Box display={'flex'} alignItems={'center'}>
+                        <Typography pr={2}>{user?.fullName}</Typography>
+                        <UserButton appearance={{elements: {userButtonAvatarBox: {width: 50, height: 50 }}}} />
+                        </Box>
+                    </SignedIn>
                 </Box>
                 {children}
                 <Footer />
@@ -265,6 +284,4 @@ function Navbar({ children }) {
     )
 }
 
-
 export default Navbar
-

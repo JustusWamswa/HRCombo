@@ -3,10 +3,13 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import Underline from '../assets/underline.png'
 import { useNavigate } from 'react-router-dom'
+import { useClerk, useUser } from '@clerk/clerk-react'
 
 function CandidateIntro() {
 
     const navigate = useNavigate()
+    const { openUserProfile } = useClerk()
+    const {user} = useUser()
 
     return (
         <Box width={'70%'} px={5} mx={'auto'} pt={8} display={'flex'}>
@@ -20,7 +23,7 @@ function CandidateIntro() {
             >
                 <Box display={'flex'} flexDirection={'column'} alignItems={'start'}>
                     <Typography color={'secondary'} fontWeight={'bold'} variant='h2' fontSize={{ xs: 40, md: 60 }}>
-                        Welcome Johnson!
+                        Welcome&nbsp;{user?.firstName}!
                     </Typography>
                     <Box
                         component="img"
@@ -58,7 +61,7 @@ function CandidateIntro() {
                     variant='outlined'
                     color='secondary'
                     sx={{ paddingX: 3, paddingY: 2, textTransform: 'capitalize', boxShadow: 2, borderRadius: 3, minWidth: 200 }}
-                    onClick={() => navigate('/candidateportal/profile')}
+                    onClick={() => openUserProfile()}
                     component={motion.div}
                     initial={{ y: '-3vh', opacity: 0 }}
                     viewport={{ once: true }}
