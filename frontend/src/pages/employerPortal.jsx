@@ -5,6 +5,7 @@ import UploadJD from '../components/UploadJD'
 import { SignedIn, SignedOut, SignInButton } from '@clerk/clerk-react'
 import { motion } from 'framer-motion'
 import Underline from '../assets/underline.png'
+import ActiveJobPostings from '../components/ActiveJobPostings'
 
 
 function EmployerPortal() {
@@ -14,6 +15,7 @@ function EmployerPortal() {
         <EmployerIntro />
         <Divider sx={{ width: '70%', mt: 12, mb: 2, mx: 'auto', bgcolor: 'gray' }} />
         <UploadJD />
+        <ActiveJobPostings />
       </SignedIn>
       <SignedOut>
         <Box width={'70%'} px={5} mx={'auto'} pt={8} display={'flex'} textAlign={'justify'} mb={20}>

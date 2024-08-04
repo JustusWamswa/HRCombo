@@ -5,12 +5,13 @@ from django.conf import settings
 from django.conf.urls.static import static
 from .views.index_views import index
 # from .views.user_views import create_user, get_user, update_user, delete_user, get_users
-from .views.jobpdf_views import create_jobpdf, get_jobpdf, update_jobpdf, delete_jobpdf, get_jobpdfs
+from .views.jobpdf_views import create_jobpdf, get_jobpdf, update_jobpdf, delete_jobpdf, get_jobpdfs, get_user_jobpdfs_with_postings
 from .views.resumepdf_views import create_resumepdf, get_resumepdf, update_resumepdf, delete_resumepdf, get_resumepdfs
 from .views.candidatepreference_views import create_candidate_preference, get_candidate_preference, update_candidate_preference, delete_candidate_preference, get_candidate_preferences
 from .views.jobposting_views import create_job_posting, get_job_posting, update_job_posting, delete_job_posting, get_job_postings
 from .views.application_views import create_application, get_application, update_application, delete_application, get_applications
 from .views.message_views import create_message, get_message, update_message, delete_message, get_messages
+from .views.search_preferences_view import search_preferences
 from .views.csrf_views import get_csrf_token
 
 urlpatterns = [
@@ -25,6 +26,7 @@ urlpatterns = [
 
     path('api/jobpdfs/', create_jobpdf, name='create_jobpdf'),
     path('api/jobpdfs/<int:jobpdf_id>/', get_jobpdf, name='get_jobpdf'),
+    path('api/userjobpdfs/<str:user_id>/', get_user_jobpdfs_with_postings, name='get_user_jobpdfs_with_postings'),
     path('api/jobpdfs/<int:jobpdf_id>/update/', update_jobpdf, name='update_jobpdf'),
     path('api/jobpdfs/<int:jobpdf_id>/delete/', delete_jobpdf, name='delete_jobpdf'),
     path('api/jobpdfs/list/', get_jobpdfs, name='get_jobpdfs'),
@@ -58,7 +60,10 @@ urlpatterns = [
     path('api/messages/<int:message_id>/update/', update_message, name='update_message'),
     path('api/messages/<int:message_id>/delete/', delete_message, name='delete_message'),
     path('api/messages/list/', get_messages, name='get_messages'),
-]
+
+    path('api/search_preferences/', search_preferences, name='search_preferences'),
+    
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # urlpatterns = [
 #     path('', index, name='index'),
@@ -68,6 +73,3 @@ urlpatterns = [
 #     path('api/add-candidate-preference/', add_candidate_preference, name='add-candidate-preference'),
 # ]
 
-
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

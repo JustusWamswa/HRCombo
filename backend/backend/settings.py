@@ -30,12 +30,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*h5#f*m%y*y(9!6#&(se+t&fnhqi5vgndxa@!5p=w0d)f!arjf'
+SECRET_KEY = config['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'http://localhost:5173', 
+    'https://hrcombo.vercel.app', 
+    'http://127.0.0.1:8000',
+    'localhost',
+    '127.0.0.1',
+]
 
 
 # Application definition
@@ -66,7 +72,7 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173', 
-    'https://hrcombo.vercel.app',    
+    'https://hrcombo.vercel.app',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -75,6 +81,7 @@ CORS_ALLOWED_HEADERS = [
     'content-type',
     'authorization',
     'x-csrftoken',
+    'x-requested-with',
 ]
 
 CORS_ALLOW_METHODS = [
@@ -129,7 +136,8 @@ DATABASES = {
         'ENFORCE_SCHEMA': False,
         'CLIENT': {
                 'host': f'mongodb+srv://{MONGODB_USER}:{MONGODB_PASSWORD}@cluster0.p98dofb.mongodb.net/{DB_NAME}?retryWrites=true&w=majority&appName=Cluster0'
-        }
+        },
+        'CONN_MAX_AGE': None,  # Enable persistent connections
     }
 }
 
@@ -168,7 +176,9 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
@@ -178,3 +188,22 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'ERROR',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'django_errors.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    },
+}

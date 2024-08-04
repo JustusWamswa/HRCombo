@@ -18,6 +18,7 @@ import Profile from './pages/profile'
 import CandidateForm from './pages/candidateForm'
 import EmployerForm from './pages/employerForm'
 import SingleJob from './pages/singleJob'
+import Scout from './pages/scout'
 
 
 const myTheme = createTheme({
@@ -75,6 +76,7 @@ function App() {
             <Route path='/candidateportal/profile' element={<Profile />} />
             <Route path='/candidateportal/candidateform' element={<CandidateForm />} />
             <Route path='/employerportal/employerform' element={<EmployerForm />} />
+            <Route path='/employerportal/scout' element={<Scout />} />
             <Route path='*' element={<PageNotFound />} />
           </Routes>
         </GoogleOAuthProvider>

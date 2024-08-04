@@ -43,6 +43,7 @@ export const getUsers = async () => api.get(`api/users/list/`);
 // JobPDFs
 export const createJobPDF = async (jobPDF) => api.post(`api/jobpdfs/`, jobPDF, {headers: {'Content-Type': 'multipart/form-data'}});
 export const getJobPDF = async (jobpdfId) => api.get(`api/jobpdfs/${jobpdfId}/`);
+export const getUserJobPDF = async (user_id) => api.get(`api/userjobpdfs/${user_id}/`);
 export const updateJobPDF = async (jobpdfId, jobPDF) => api.put(`api/jobpdfs/${jobpdfId}/update/`, jobPDF);
 export const deleteJobPDF = async (jobpdfId) => api.delete(`api/jobpdfs/${jobpdfId}/delete/`);
 export const getJobPDFs = async () => api.get(`api/jobpdfs/list/`);
@@ -81,3 +82,8 @@ export const getMessage = async (messageId) => api.get(`api/messages/${messageId
 export const updateMessage = async (messageId, message) => api.put(`api/messages/${messageId}/update/`, message);
 export const deleteMessage = async (messageId) => api.delete(`api/messages/${messageId}/delete/`);
 export const getMessages = async () => api.get(`api/messages/list/`);
+
+
+// Search
+export const searchPreferences = async (search) => api.post(`api/search_preferences/`, search);
+

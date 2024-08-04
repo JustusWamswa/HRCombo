@@ -22,3 +22,5 @@
   .scroll-to-top-button.hidden {
     opacity: 0;
   }
+
+  .rpv-full-screen__overlay { display: none !important; }
