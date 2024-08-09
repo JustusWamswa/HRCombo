@@ -24,3 +24,7 @@
   }
 
   .rpv-full-screen__overlay { display: none !important; }
+
+  .highlight {
+    background-color: yellow;
+  }

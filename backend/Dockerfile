@@ -13,6 +13,9 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 
+# Install NLTK data
+RUN python -m nltk.downloader punkt averaged_perceptron_tagger stopwords
+
 # Copy project.
 COPY . /app/
 

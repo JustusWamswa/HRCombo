@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Button, Grid, Autocomplete, TextField, Stack } from '@mui/material';
+import { Box, Typography, Button, Grid, Stack } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Viewer } from '@react-pdf-viewer/core';
 import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { Worker } from '@react-pdf-viewer/core';
-import { createCandidatePreference } from '../services/api';
+import { createCandidatePreference, getInference } from '../services/api';
 import { useRequestStateStore } from '../stores/useRequestStateStore';
 import { useUser } from '@clerk/clerk-react';
 import Title from '../components/Title';
@@ -17,43 +17,11 @@ import { highlightPlugin } from '@react-pdf-viewer/highlight'
 import '@react-pdf-viewer/highlight/lib/styles/index.css'
 import '../index.css'
 import SearchPreferences from '../components/SearchPreferences';
+import { searchPlugin } from '@react-pdf-viewer/search'
+import '@react-pdf-viewer/search/lib/styles/index.css'
 
 const url = import.meta.env.VITE_MEDIA_URL
 
-const matchingWords = ['data', 'work', 'programming']
-const industryOptions = [
-  { title: 'Technology' },
-  { title: 'Finance' },
-  { title: 'Healthcare' },
-  // Add more options as needed
-];
-
-const locationOptions = [
-  { title: 'Hybrid' },
-  { title: 'Remote' },
-  { title: 'Onsite' },
-  // Add more options as needed
-];
-
-const HighlightPlugin = ({ fileUrl, matchingWords }) => {
-  const highlightPluginInstance = highlightPlugin({
-    highlightAreas: matchingWords.map(word => ({
-      keyword: word,
-      highlightColor: '#FFFF00' // Yellow highlight
-    }))
-  });
-
-  return (
-    <div style={{ height: '750px' }}>
-      <Worker workerUrl={`https://unpkg.com/pdfjs-dist@2.6.347/build/pdf.worker.min.js`}>
-        <Viewer
-          fileUrl={fileUrl}
-          plugins={[highlightPluginInstance]}
-        />
-      </Worker>
-    </div>
-  );
-};
 
 
 const Scout = () => {
@@ -62,6 +30,11 @@ const Scout = () => {
   const [results, setResults] = useState([])
   const [showResume, setShowResume] = useState(false)
   const [selectedResume, setSelectedResume] = useState('')
+  const [selectedJobText, setSelectedJobText] = useState('')
+  const [selectedResumeText, setSelectedResumeText] = useState('')
+  const [searchPluginInstances1, setSearchPluginInstances1] = useState([])
+  const [searchPluginInstances2, setSearchPluginInstances2] = useState([])
+  const [matchingWords, setMatchingWords] = useState([])
   // const defaultLayoutPluginInstance = defaultLayoutPlugin();
   const defaultLayoutPluginInstance = defaultLayoutPlugin({
     toolbarPlugin: {
@@ -77,14 +50,17 @@ const Scout = () => {
   const getFilePluginInstance1 = getFilePlugin();
   const toolbarPluginInstance1 = toolbarPlugin();
   const highlightPluginInstance1 = highlightPlugin();
+  // const searchPluginInstance1 = searchPlugin({keyword: new RegExp(`\\bcommunication\\b`, 'gi') });
 
   const defaultLayoutPluginInstance2 = defaultLayoutPlugin();
   const fullScreenPluginInstance2 = fullScreenPlugin();
   const getFilePluginInstance2 = getFilePlugin();
   const toolbarPluginInstance2 = toolbarPlugin();
   const highlightPluginInstance2 = highlightPlugin();
+  const searchPluginInstance2 = searchPlugin();
+
   const location = useLocation();
-  const { file } = location.state || {};
+  const { file, fileText } = location.state || {};
   const [industries, setIndustries] = useState([]);
   const [preferredLocations, setPreferredLocations] = useState([]);
   const [locationValue, setLocationValue] = useState(null);
@@ -92,49 +68,64 @@ const Scout = () => {
   const [errors, setErrors] = useState({ industries: false, preferredLocations: false, country: false, address: false });
   const { setSuccess, setError, setLoading } = useRequestStateStore();
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Validate fields
-    const newErrors = {
-      industries: industries.length === 0,
-      preferredLocations: preferredLocations.length === 0,
-      country: myLocation.country === '',
-      address: myLocation.address === '',
-    };
-    setErrors(newErrors);
-
-    if (!newErrors.industries && !newErrors.preferredLocations && !newErrors.country && !newErrors.address) {
-      const preferences = {
-        industries: industries.map(ind => ind.title).join(', '),
-        preferred_location: preferredLocations.map(loc => loc.title).join(', '),
-        country: myLocation.country,
-        address: myLocation.address,
-        resume_pdf_id: file,
-        user: user?.id
-      };
-      console.log(preferences);
-      setLoading(true);
-      createCandidatePreference(preferences)
-        .then((res) => {
-          setLoading(false);
-          setSuccess(true);
-          setTimeout(() => {
-            setSuccess(false);
-          }, 3000);
-          navigate('/candidateportal');
-        })
-        .catch((err) => {
-          console.log(err);
-          setLoading(false);
-          setError(true);
-          setTimeout(() => {
-            setError(false);
-          }, 3000);
-        });
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
     }
+    return color;
   };
-  console.log(selectedResume)
 
+  const newSearchPlugins1 = matchingWords?.map((word) =>
+    searchPlugin({
+      keyword: new RegExp(`\\b${word}\\b`, 'gi'),
+      onHighlightKeyword: (props) => {
+        props.highlightEle.style.backgroundColor = getRandomColor();
+        props.highlightEle.style.opacity = 0.3;
+      }
+    })
+  )
+  const newSearchPlugins2 = matchingWords?.map((word) =>
+    searchPlugin({
+      keyword: new RegExp(`\\b${word}\\b`, 'gi'),
+      onHighlightKeyword: (props) => {
+        props.highlightEle.style.backgroundColor = getRandomColor();
+        props.highlightEle.style.opacity = 0.3;
+      }
+    })
+  )
+  useEffect(() => {
+    setSearchPluginInstances1(newSearchPlugins1);
+    setSearchPluginInstances2(newSearchPlugins2);
+  }, [matchingWords]);
+
+  console.log(matchingWords)
+  const handleAnalyseResume = () => {
+    setLoading(true)
+    const data = { job: fileText, resume: selectedResumeText }
+    getInference(data)
+      .then((res) => {
+        const words = res.data['Matching Nouns']
+        console.log(typeof(words))
+        // setMatchingWords(words)
+        setLoading(false);
+        setSuccess(true);
+        setTimeout(() => {
+          setSuccess(false);
+        }, 3000);
+      })
+      .catch((err) => {
+        console.log(err)
+        setLoading(false);
+        setError(true);
+        setTimeout(() => {
+          setError(false);
+        }, 3000);
+      })
+  };
+
+  
   return (
     <Box sx={{ px: 4 }} width={'80%'} mx={'auto'}>
       <Title text={"Scout Talent"} />
@@ -158,6 +149,8 @@ const Scout = () => {
                     getFilePluginInstance1,
                     toolbarPluginInstance1,
                     highlightPluginInstance1,
+                    // searchPluginInstance1,
+                    ...searchPluginInstances1,
                   ]}
                 />
               </Worker>
@@ -172,7 +165,7 @@ const Scout = () => {
           <Stack direction={'row'} justifyContent={'space-between'}>
             <Typography mb={3} sx={{ textDecoration: 'underline' }}>Resume</Typography>
             <Box>
-              <Button onClick={() => setShowResume(true)} sx={{ textTransform: 'capitalize', ml: 3 }} variant='contained'>Analyse Resume</Button>
+              <Button onClick={handleAnalyseResume} sx={{ textTransform: 'capitalize', ml: 3 }} variant='contained'>Analyse Resume</Button>
               <Button onClick={() => setShowResume(false)} sx={{ textTransform: 'capitalize', ml: 3 }} variant='contained'>New Search</Button>
             </Box>
           </Stack>
@@ -193,6 +186,8 @@ const Scout = () => {
                     getFilePluginInstance2,
                     toolbarPluginInstance2,
                     highlightPluginInstance2,
+                    searchPluginInstance2,
+                    ...searchPluginInstances2,
                   ]}
                 />
               </Worker>
@@ -208,7 +203,12 @@ const Scout = () => {
 
             <Box width={'100%'} pl={5}>
               <Typography mb={3}>Filter candidates by country or industry</Typography>
-              <SearchPreferences results={results} setResults={setResults} setShowResume={setShowResume} setSelectedResume={setSelectedResume} />
+              <SearchPreferences
+                results={results}
+                setResults={setResults}
+                setShowResume={setShowResume}
+                setSelectedResume={setSelectedResume}
+                setSelectedResumeText={setSelectedResumeText} />
             </Box>
           </Grid>}
       </Grid>

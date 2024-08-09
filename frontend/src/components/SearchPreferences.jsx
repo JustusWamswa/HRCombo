@@ -10,7 +10,7 @@ const industryOptions = [
     { title: 'Healthcare' },
 ]
 
-const SearchPreferences = ({results, setResults, setShowResume, setSelectedResume}) => {
+const SearchPreferences = ({results, setResults, setShowResume, setSelectedResume, setSelectedResumeText}) => {
     const [country, setCountry] = useState('');
     const [industry, setIndustry] = useState(null);
     const { setSuccess, setError, setLoading } = useRequestStateStore()
@@ -100,6 +100,7 @@ const SearchPreferences = ({results, setResults, setShowResume, setSelectedResum
                         onClick={() => {
                             setShowResume(true)
                             setSelectedResume(preference.resume_pdf__file)
+                            setSelectedResumeText(preference.resume_pdf__file_text)
                         }} 
                         sx={{textTransform: 'capitalize', ml: 3}} 
                         variant='contained'>

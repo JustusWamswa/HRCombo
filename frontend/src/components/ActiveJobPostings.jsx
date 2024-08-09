@@ -55,7 +55,7 @@ function ActiveJobPostings() {
                                 transition={{ type: 'spring', duration: 1, delay: 0.2 }}
                                 whileInView={{ y: 0, opacity: 1 }}
                                 viewport={{ once: true }}
-                                onClick={() => navigate('/employerportal/scout', { state: { file: `${url}${job?.file}` } })}
+                                onClick={() => navigate('/employerportal/scout', { state: { file: `${url}${job?.file}`, fileText: job?.file_text } })}
                             >
                                 <Stack direction={'row'} justifyContent={'space-between'} alignItems={'center'}>
                                     <Avatar alt="logo" src={`${url}${job?.job_postings[0]?.logo}`} sx={{ width: 60, height: 60 }} />

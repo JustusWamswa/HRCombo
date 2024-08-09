@@ -12,6 +12,7 @@ from .views.jobposting_views import create_job_posting, get_job_posting, update_
 from .views.application_views import create_application, get_application, update_application, delete_application, get_applications
 from .views.message_views import create_message, get_message, update_message, delete_message, get_messages
 from .views.search_preferences_view import search_preferences
+from .views.inference_view import get_inference
 from .views.csrf_views import get_csrf_token
 
 urlpatterns = [
@@ -62,7 +63,9 @@ urlpatterns = [
     path('api/messages/list/', get_messages, name='get_messages'),
 
     path('api/search_preferences/', search_preferences, name='search_preferences'),
-    
+
+    path('api/get_inference/', get_inference, name='get_inference'),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # urlpatterns = [

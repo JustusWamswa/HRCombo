@@ -87,3 +87,6 @@ export const getMessages = async () => api.get(`api/messages/list/`);
 // Search
 export const searchPreferences = async (search) => api.post(`api/search_preferences/`, search);
 
+// Inference
+export const getInference = async (data) => api.post(`api/get_inference/`, data);
+
